@@ -4,7 +4,8 @@
  */
 import axios from 'axios'
 
-const BASE = '/api/v1/estimates'
+const API_URL = import.meta.env.VITE_API_URL || '';
+const BASE = `${API_URL}/api/v1/estimates`;
 
 const api = {
     // POST  /api/v1/estimates/  — run pipeline and save
