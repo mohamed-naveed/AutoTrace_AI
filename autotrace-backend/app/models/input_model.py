@@ -34,3 +34,7 @@ class EstimateInput(BaseModel):
     joint_box_rate:         float = Field(default=1500.0, description="₹ per joint box")
     labor_rate_per_day:     float = Field(default=1200.0, description="₹ per labour day")
     equipment_rate_per_day: float = Field(default=0.0,    description="₹ per equipment day")
+
+    # ── What-If Scenario Overrides ──────────────────────
+    labor_inflation:        float = Field(default=0.0, description="Percentage adjustment for labor cost (e.g., 10.0 for +10%)")
+    material_inflation:     float = Field(default=0.0, description="Percentage adjustment for material cost (e.g., -5.0 for -5%)")

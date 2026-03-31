@@ -19,21 +19,33 @@ class DNAAgent:
 
         deviation_pct = state["validation_result"].get("deviation_percentage", 0.0)
         confidence    = state["validation_result"].get("confidence", "High")
+        confidence_score = state["validation_result"].get("confidence_score", 100.0)
+        prediction_difference = state.get("prediction_difference", 0.0)
+        ai_predicted_cost = state.get("ai_predicted_cost", 0.0)
 
         return {
             "project_id": state["project_id"],
 
             # ── inputs ──────────────────────────────────────────────────────
             "inputs": {
+                "project_name":        inp.get("project_name", "Unnamed"),
                 "project_type":        inp.get("project_type"),
                 "area_type":           inp.get("area_type"),
                 "build_type":          inp.get("build_type"),
-                "distance_km":         inp.get("distance_km"),          # ← human-readable km
+                "distance_km":         inp.get("distance_km"),
                 "distance_m":          inp.get("distance_m"),
+                "state":               inp.get("state"),
+                "location":            inp.get("location"),
                 "complexity":          inp.get("complexity"),
                 "permission_required": inp.get("permission_required"),
                 "equipment_required":  inp.get("equipment_required"),
                 "is_extension":        is_extension,
+                "cable_rate":             inp.get("cable_rate"),
+                "pole_rate":              inp.get("pole_rate"),
+                "duct_rate":              inp.get("duct_rate"),
+                "joint_box_rate":         inp.get("joint_box_rate"),
+                "labor_rate_per_day":     inp.get("labor_rate_per_day"),
+                "equipment_rate_per_day": inp.get("equipment_rate_per_day"),
             },
 
             # ── derived_materials ────────────────────────────────────────────
@@ -74,6 +86,13 @@ class DNAAgent:
                 "deviation_percentage": deviation_pct,
                 "confidence":           confidence,
                 "flags":                state["validation_result"].get("flags", []),
+            },
+
+            # ── ai_prediction ────────────────────────────────────────────────
+            "ai_prediction": {
+                "ai_predicted_cost":     ai_predicted_cost,
+                "prediction_difference": prediction_difference,
+                "confidence_score":      confidence_score,
             },
 
             # ── final_cost ───────────────────────────────────────────────────

@@ -17,7 +17,10 @@ async def run_dna_replay(project_id: str, overrides: Dict[str, Any]):
     # 1. Fetch the existing DNA record from the database
     past_dna = await estimate_service.dna_repo.get_by_project(project_id)
     if not past_dna:
-        raise HTTPException(status_code=404, detail="DNA record not found for this project")
+        # Fallback: Try to reconstruct minimal DNA from project metadata
+        past_dna = await estimate_service.reconstruct_minimal_dna(project_id)
+        if not past_dna:
+            raise HTTPException(status_code=404, detail="Project not found and DNA cannot be reconstructed")
         
     # 2. Run the Replay Agent
     try:
@@ -25,3 +28,14 @@ async def run_dna_replay(project_id: str, overrides: Dict[str, Any]):
         return {"status": "success", "data": replay_result}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Replay failed: {str(e)}")
+
+@router.post("/{project_id}/save")
+async def save_dna_replay(project_id: str, simulated_dna: Dict[str, Any]):
+    """
+    Overwrites the official project records with the simulated results.
+    """
+    try:
+        success = await estimate_service.update_project_with_simulated_dna(project_id, simulated_dna)
+        return {"status": "success", "message": "Project updated with simulated results"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Save failed: {str(e)}")

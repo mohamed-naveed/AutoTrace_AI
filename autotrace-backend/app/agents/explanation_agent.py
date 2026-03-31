@@ -14,6 +14,7 @@ class ExplanationAgent:
             mflags   = dna.get("material_flags", {})
             mults    = dna.get("multipliers_applied", {})
             vr       = dna.get("validation_result", {})
+            ai       = dna.get("ai_prediction", {})
             inp      = dna.get("inputs", {})
 
             project_type = inp.get("project_type", "new").lower()
@@ -44,6 +45,8 @@ class ExplanationAgent:
             conf     = vr.get("confidence", "High")
             dev_pct  = vr.get("deviation_percentage", 0)
             flags    = vr.get("flags", [])
+            ai_cost  = ai.get("ai_predicted_cost", 0)
+            ai_diff  = ai.get("prediction_difference", 0) * 100
 
             # ── Build the explanation ─────────────────────────────────────
             lines = []
@@ -135,10 +138,17 @@ class ExplanationAgent:
             )
 
             # Validation
-            lines.append(
-                f"Validation (Rule 19): {conf} confidence — {dev_pct:.1f}% deviation from "
-                f"India FTTP baseline of ₹1,20,000/km."
-            )
+            if ai_cost > 0:
+                lines.append(
+                    f"Validation (Rule 19): The rule-based estimation produced ₹{total:,.0f} "
+                    f"while the AI model predicted ₹{ai_cost:,.0f} based on historical "
+                    f"FTTP deployments. The difference is {ai_diff:.1f}%, resulting in a {conf.lower()} confidence estimate."
+                )
+            else:
+                lines.append(
+                    f"Validation (Rule 19): {conf} confidence — {dev_pct:.1f}% deviation from "
+                    f"India FTTP baseline of ₹1,20,000/km."
+                )
             if flags:
                 lines.append("Flags: " + " | ".join(flags))
 

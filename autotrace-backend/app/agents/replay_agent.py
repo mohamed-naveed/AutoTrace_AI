@@ -36,8 +36,29 @@ class ReplayAgent:
         # 3. Run the estimation pipeline synchronously (we don't persist replay results yet)
         # Using the sync stub function in the service to just get the DNA
         new_dna = self.estimate_service.generate_estimate(new_request)
+
+        # 4. Apply Inflation Scaling (What-If Pro logic)
+        labor_inflation = float(overrides.get("labor_inflation", 0))
+        material_inflation = float(overrides.get("material_inflation", 0))
+
+        if labor_inflation != 0:
+            original_labor = new_dna["final_cost"]["labor_cost"]
+            new_dna["final_cost"]["labor_cost"] = round(original_labor * (1 + labor_inflation / 100), 2)
         
-        # 4. Return both for the frontend to compare
+        if material_inflation != 0:
+            original_material = new_dna["final_cost"]["material_cost"]
+            new_dna["final_cost"]["material_cost"] = round(original_material * (1 + material_inflation / 100), 2)
+
+        # Recalculate Total Cost
+        new_dna["final_cost"]["total_cost"] = round(
+            new_dna["final_cost"]["material_cost"] + 
+            new_dna["final_cost"]["labor_cost"] + 
+            new_dna["final_cost"]["permission_cost"] + 
+            new_dna["final_cost"]["equipment_cost"], 
+            2
+        )
+
+        # 5. Return both for the frontend to compare
         return {
             "old_dna": past_dna,
             "new_dna": new_dna,

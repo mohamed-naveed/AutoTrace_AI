@@ -24,3 +24,15 @@ class ProjectRepository:
         for d in docs:
             d["_id"] = str(d["_id"])
         return docs
+
+    async def delete(self, project_id: str) -> bool:
+        result = await projects_collection.delete_one({"project_id": project_id})
+        return result.deleted_count > 0
+
+    async def update(self, project_id: str, data: dict) -> bool:
+        update_data = {k: v for k, v in data.items() if k != "_id"}
+        result = await projects_collection.update_one(
+            {"project_id": project_id},
+            {"$set": update_data}
+        )
+        return result.modified_count > 0

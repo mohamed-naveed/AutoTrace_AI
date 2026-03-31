@@ -14,6 +14,10 @@ class InputAgent:
         distance_km: float = payload.get("distance_km", 0.0)
         distance_m:  float = distance_km * 1000.0
 
+        # ── Unit rates with What-If Inflation ──────────────────
+        labor_inf    = 1.0 + (payload.get("labor_inflation", 0.0) / 100.0)
+        material_inf = 1.0 + (payload.get("material_inflation", 0.0) / 100.0)
+
         return {
             "project_id":   payload.get("project_id", str(uuid.uuid4())),
             "raw_input":    payload,
@@ -30,12 +34,12 @@ class InputAgent:
 
             # Unit rates
             "rates": {
-                "cable":            payload.get("cable_rate",             50.0),
-                "pole":             payload.get("pole_rate",            1500.0),
-                "duct":             payload.get("duct_rate",             200.0),
-                "joint_box":        payload.get("joint_box_rate",        800.0),
-                "labor_per_day":    payload.get("labor_rate_per_day",   3000.0),
-                "equipment_per_day":payload.get("equipment_rate_per_day",  0.0),
+                "cable":            payload.get("cable_rate",             45.0) * material_inf,
+                "pole":             payload.get("pole_rate",            3000.0) * material_inf,
+                "duct":             payload.get("duct_rate",             500.0) * material_inf,
+                "joint_box":        payload.get("joint_box_rate",        1500.0) * material_inf,
+                "labor_per_day":    payload.get("labor_rate_per_day",   1200.0) * labor_inf,
+                "equipment_per_day":payload.get("equipment_rate_per_day",  0.0) * labor_inf,
             },
 
             # Boolean flags (Rule 15, 16)

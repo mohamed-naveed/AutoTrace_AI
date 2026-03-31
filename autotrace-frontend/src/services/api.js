@@ -20,11 +20,20 @@ const api = {
     // GET   /api/v1/estimates/dna — list cost_dna collection
     getDNA: () => axios.get(`${BASE}/dna`),
 
+    // GET   /api/v1/estimates/projects/:id — single project metadata
+    getProject: (projectId) => axios.get(`${BASE}/projects/${projectId}`),
+
     // GET   /api/v1/estimates/:id/dna — single project DNA
     getProjectDNA: (projectId) => axios.get(`${BASE}/${projectId}/dna`),
 
     // POST  /api/v1/replay/:id — Run a what-if scenario on past DNA
     runReplay: (projectId, overrides) => axios.post(`/api/v1/replay/${projectId}`, overrides),
+
+    // POST  /api/v1/replay/:id/save — Save simulated DNA as the official estimate for a project
+    saveReplay: (projectId, simulatedDna) => axios.post(`/api/v1/replay/${projectId}/save`, simulatedDna),
+
+    // DELETE /api/v1/estimates/:id — delete a project
+    deleteProject: (projectId) => axios.delete(`${BASE}/${projectId}`),
 }
 
 export default api

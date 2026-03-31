@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
 import api from '../services/api'
+import SelectionMap from '../components/SelectionMap'
 
 /* ── Static data ─────────────────────────────────────────── */
 const INDIA_STATES = [
@@ -128,6 +129,7 @@ export default function NewEstimate() {
     const [showRates, setShowRates] = useState(false)
     const [agentsDone, setAgentsDone] = useState(0)
     const [animating, setAnimating] = useState(false)
+    const [showMap, setShowMap] = useState(false)
 
     const set = (k, v) => { setForm(p => ({ ...p, [k]: v })); setError(null) }
     const onChange = e => {
@@ -364,9 +366,23 @@ export default function NewEstimate() {
                                     <div style={{ marginBottom: 28 }}>
 
                                         <div className="form-group">
-                                            <FieldLabel hint="Rule 1: internally converted to metres for all calculations">
-                                                Route Distance (km)
-                                            </FieldLabel>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 8 }}>
+                                                <FieldLabel hint="Rule 1: internally converted to metres for all calculations">
+                                                    Route Distance (km)
+                                                </FieldLabel>
+                                                <button type="button" onClick={() => setShowMap(true)}
+                                                    style={{
+                                                        background: 'rgba(99,102,241,0.1)', border: '1px solid var(--border-accent)',
+                                                        color: 'var(--accent-cyan)', fontSize: '0.72rem', fontWeight: 700,
+                                                        padding: '4px 10px', borderRadius: 6, cursor: 'pointer',
+                                                        display: 'flex', alignItems: 'center', gap: 4, transition: 'all 0.2s'
+                                                    }}
+                                                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.2)'}
+                                                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(99,102,241,0.1)'}
+                                                >
+                                                    🗺️ Pick on Map
+                                                </button>
+                                            </div>
                                             <input id="distance_km" name="distance_km" className="form-input"
                                                 type="number" min="0.01" step="0.01" placeholder="e.g. 5.2"
                                                 value={form.distance_km} onChange={onChange} autoFocus
@@ -782,6 +798,38 @@ export default function NewEstimate() {
                     </div>
                 )}
             </div>
+            {/* ── Selection Map Modal ── */}
+            {showMap && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+                    background: 'rgba(5, 8, 17, 0.9)', backdropFilter: 'blur(12px)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    zIndex: 2000, padding: 20, animation: 'fadeIn 0.3s'
+                }}>
+                    <div className="card fade-up" style={{
+                        width: '100%', maxWidth: 900, padding: 32,
+                        position: 'relative', border: '1px solid var(--border-accent)'
+                    }}>
+                        <button onClick={() => setShowMap(false)} style={{
+                            position: 'absolute', top: 20, right: 20, background: 'none',
+                            border: 'none', color: 'var(--text-muted)', cursor: 'pointer',
+                            fontSize: '1.5rem'
+                        }}>×</button>
+
+                        <div style={{ marginBottom: 24 }}>
+                            <h2 style={{ fontFamily: 'Space Grotesk', fontSize: '1.5rem', marginBottom: 6 }}>Route Planner</h2>
+                            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                                Pick your fiber source and destination on the map to calculate real road distance.
+                            </p>
+                        </div>
+
+                        <SelectionMap onComplete={(dist) => {
+                            set('distance_km', dist)
+                            setShowMap(false)
+                        }} />
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

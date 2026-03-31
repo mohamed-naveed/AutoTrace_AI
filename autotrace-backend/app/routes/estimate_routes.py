@@ -32,6 +32,14 @@ async def list_projects():
     return {"status": "success", "data": projects}
 
 
+@router.get("/projects/{project_id}", summary="Get a single project")
+async def get_project(project_id: str):
+    project = await estimate_service.project_repo.get_by_id(project_id)
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return {"status": "success", "data": project}
+
+
 @router.get("/dna", summary="List all Cost DNA records")
 async def list_dna():
     records = await estimate_service.dna_repo.list_all()
@@ -40,7 +48,18 @@ async def list_dna():
 
 @router.get("/{project_id}/dna", summary="Get Cost DNA for a project")
 async def get_dna(project_id: str):
+    # 1. Fetch DNA from DB
     record = await estimate_service.dna_repo.get_by_project(project_id)
     if not record:
-        raise HTTPException(status_code=404, detail="DNA record not found")
+        # Fallback: Create minimal DNA from project metadata
+        record = await estimate_service.reconstruct_minimal_dna(project_id)
+        if not record:
+            raise HTTPException(status_code=404, detail="DNA record not found and cannot be reconstructed")
     return {"status": "success", "data": record}
+
+@router.delete("/{project_id}", summary="Delete a project and its associated data")
+async def delete_project(project_id: str):
+    success = await estimate_service.delete_project(project_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return {"status": "success", "message": "Project deleted successfully"}

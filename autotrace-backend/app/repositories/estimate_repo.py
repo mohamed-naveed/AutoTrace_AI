@@ -22,3 +22,15 @@ class EstimateRepository:
         for d in docs:
             d["_id"] = str(d["_id"])
         return docs
+
+    async def delete_by_project(self, project_id: str) -> bool:
+        result = await cost_estimates_collection.delete_many({"project_id": project_id})
+        return result.deleted_count > 0
+
+    async def update_by_project(self, project_id: str, data: dict) -> bool:
+        update_data = {k: v for k, v in data.items() if k != "_id"}
+        result = await cost_estimates_collection.update_one(
+            {"project_id": project_id},
+            {"$set": update_data}
+        )
+        return result.modified_count > 0
